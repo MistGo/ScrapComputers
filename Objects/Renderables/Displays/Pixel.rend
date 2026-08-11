@@ -4,12 +4,9 @@
 			"mesh": "$CONTENT_DATA/Objects/Mesh/Displays/Pixel.obj",
 			"subMeshList": [
 				{
-					"custom": {
-						"shadow": false
-					},
 					"material": "DifAsg",
 					"textureList": [
-						"$CONTENT_DATA/Objects/Textures/transparent.png",
+						"",
 						//"$CONTENT_DATA/Objects/Textures/transparentDebug.png",
 						"$CONTENT_DATA/Objects/Textures/Glow_ASG.png"
 					]

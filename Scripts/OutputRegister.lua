@@ -71,7 +71,6 @@ function OutputRegisterClass:client_onCreate()
     self.cl.gui = sm.scrapcomputers.gui:createGuiFromLayout("$CONTENT_632be32f-6ebd-414e-a061-d45906ae4dc6/Gui/Layout/Register.layout", false)
     self.cl.gui:setTextChangedCallback("Input", "cl_onTextChanged")
     self.cl.gui:setButtonCallback("Button", "cl_onSave")
-    self.cl.gui:setOnCloseCallback("cl_onGuiClose")
 end
 
 function OutputRegisterClass:cl_setName(name)

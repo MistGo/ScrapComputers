@@ -1,23 +1,24 @@
 {
-    // Backpanel
-    "ScrapComputers - ShapeRenderableBackPanel": {
-        
-        "effectList": [
-            {
-                "type": "shapeRenderable"
-                
-            }
-        ]
-    },
-
-    // Pixels
-    "ScrapComputers - ShapeRenderablePixel": {
-        
-        "effectList": [
-            {
-                "type": "shapeRenderable"
-            }
-        ],
-        "maxInstances": 2147483647
-    }
+	"ScrapComputers - ShapeRenderableBackPanel" : 
+	{
+		"effectList" : 
+		[
+			{
+				"shape" : "cd943f04-96c7-43f0-852c-b2d68c7fc157",
+				"type" : "shapeRenderable"
+			}
+		],
+		"maxInstances" : 2147483647
+	},
+	"ScrapComputers - ShapeRenderablePixel" : 
+	{
+		"effectList" : 
+		[
+			{
+				"shape" : "cd943f04-96c7-43f0-852c-b2d68c7fc157",
+				"type" : "shapeRenderable"
+			}
+		],
+		"maxInstances" : 2147483647
+	}
 }

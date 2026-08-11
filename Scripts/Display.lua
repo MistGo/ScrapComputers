@@ -68,7 +68,6 @@ local camera = sm.camera
 local tinkerBind = sm.gui.getKeyBinding("Tinker", true)
 local interactBind = sm.gui.getKeyBinding("Use", true)
 
-local PIXEL_UUID = sm.uuid.new("cd943f04-96c7-43f0-852c-b2d68c7fc157")
 local BACKPANEL_EFFECT_NAME = "ScrapComputers - ShapeRenderableBackPanel"
 local effectPrefix = "ScrapComputers - ShapeRenderable"
 local rePos = sm_vec3_new(0, 0, -10000)
@@ -90,15 +89,14 @@ local networkInstructions = {
 }
 
 local function pixelPosToShapePos(x, y, widthScale, heightScale, pixelScaleY, pixelScaleZ)
-    local v1 = pixelScaleZ * 0.01
-    local v2 = pixelScaleY * 0.01
+    local v1 = pixelScaleZ
+    local v2 = pixelScaleY
 
     return widthScale * -0.5 + v1 * 0.5 + 0.02 + x * v1, heightScale * -0.5 + v2 * 0.5 + 0.02 + y * v2
 end
 
-
 local function shapePosToPixelPos(point, widthScale, heightScale, pixelScaleY, pixelScaleZ)
-    return 100 / pixelScaleZ * (point.z - 0.02 + widthScale / 2 - pixelScaleZ / 200) + 1, 100 / pixelScaleY * (point.y - 0.02 + heightScale / 2 - pixelScaleY / 200) + 1
+    return 1 / pixelScaleZ * (point.z - 0.02 + widthScale / 2 - pixelScaleZ / 2) + 1, 1 / pixelScaleY * (point.y - 0.02 + heightScale / 2 - pixelScaleY / 2) + 1
 end
 
 local function round(numb)
@@ -1070,14 +1068,13 @@ function DisplayClass:client_onCreate()
     self.cl.display.heightScale = heightScale
 
     local offset = 0.04
-    local bgScale = sm_vec3_new(0, (self.cl.display.heightScale - offset) * 100, (self.cl.display.widthScale - offset) * 100)
+    local bgScale = sm_vec3_new(0, self.cl.display.heightScale - offset, self.cl.display.widthScale - offset)
 
     self.cl.pixel.pixelScale = sm_vec3_new(0, bgScale.y / height, bgScale.z / width)
 
     if not isAircraftDisplay then
         self.cl.backPanel.effect = sm_effect_createEffect(BACKPANEL_EFFECT_NAME, self.interactable)
 
-        effect_setParameter(self.cl.backPanel.effect, "uuid", PIXEL_UUID)
         effect_setParameter(self.cl.backPanel.effect,"color", idToColor(self.cl.backPanel.currentColor))
 
         effect_setOffsetPosition(self.cl.backPanel.effect, sm_vec3_new(self.data.panelOffset or 0.115, 0, 0))
@@ -1797,7 +1794,6 @@ function DisplayClass:cl_pushData()
             end
         else
             effect = sm_effect_createEffect(pixelEffect, self_interactable)
-            effect_setParameter(effect, "uuid", PIXEL_UUID)
 
             if not isHidden then
                 effect_start(effect)
@@ -2439,7 +2435,6 @@ function DisplayClass:cl_optimiseDisplay()
             end
         else
             effect = sm_effect_createEffect(pixelEffect, self_interactable)
-            effect_setParameter(effect, "uuid", PIXEL_UUID)
 
             if not isHidden then
                 effect_start(effect)

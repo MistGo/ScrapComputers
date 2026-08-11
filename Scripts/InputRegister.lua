@@ -90,8 +90,6 @@ function InputRegisterClass:client_onCreate()
     
     self.cl.gui:setTextChangedCallback("Input", "cl_onTextChanged")
     self.cl.gui:setButtonCallback("Button", "cl_onSave")
-
-    self.cl.gui:setOnCloseCallback("cl_onGuiClose")
 end
 
 function InputRegisterClass:cl_setName(name)
