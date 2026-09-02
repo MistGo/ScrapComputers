@@ -88,6 +88,7 @@ function sm.scrapcomputers.environmentManager.createEnv(self, luaVM)
 
         tonumber = tonumber,
         type = type,
+        enumType = enumType,
         string = {
             byte = string.byte,
             char = string.char,
@@ -246,7 +247,7 @@ function sm.scrapcomputers.environmentManager.createEnv(self, luaVM)
 
                 for _, writer in pairs(writers) do
                     if writer.name == registerName then
-                        sm.event.sendToInteractable(writer.SC_PRIVATE_interactable, "sv_onReceivePowerUpdate", power)
+                        sm.event.sendToInteractable(writer.SC_PRIVATE_interactable, "sv_onReceivePowerUpdate", power, sm.event.types.instant)
                         return
                     end
                 end
@@ -354,19 +355,11 @@ function sm.scrapcomputers.environmentManager.createEnv(self, luaVM)
 
             power = {
                 getConsumtion = function ()
-                    if not self.sv then
-                        return 0
-                    end
-
-                    return self.sv.totalPPTNeeded or 0
+                    return self.sv and (self.sv.totalPPTNeeded or 0) or 0
                 end,
 
                 getReceivingPower = function ()
-                    if not self.sv then
-                        return 0
-                    end
-
-                    return self.sv.receivingPower or 0
+                    return self.sv and (self.sv.receivingPower or 0) or 0
                 end
             },
 
@@ -376,8 +369,10 @@ function sm.scrapcomputers.environmentManager.createEnv(self, luaVM)
         },
 
         sm = {
+            types = sm.scrapcomputers.table.clone(sm.scrapcomputers.types),
             vec3 = sm.scrapcomputers.table.clone(sm.vec3),
             util = {
+                easingFunctionIds = sm.scrapcomputers.table.clone(sm.util.easingFunctionIds),
                 axesToQuat = sm.util.axesToQuat,
                 bezier2 = sm.util.bezier2,
                 bezier3 = sm.util.bezier3,

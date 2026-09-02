@@ -21,7 +21,7 @@ function sm.scrapcomputers.utf8.getCharacterAt(str, index)
     elseif byte >= 0xF0 and byte <= 0xF7 then
         byteCount = 4
     else
-        error("Invalid UTF8 string!")
+        byteCount = 1
     end
 
     return string_sub(str, index, index + byteCount - 1), byteCount
@@ -46,7 +46,7 @@ function sm.scrapcomputers.utf8.getStringSize(str)
         elseif byte >= 240 and byte <= 247 then
             index = index + 4
         else
-            error("Invalid UTF8 string!")
+            index = index + 1
         end
 
         length = length + 1

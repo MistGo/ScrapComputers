@@ -10,10 +10,13 @@ InputRegisterClass.colorHighlight = sm.color.new(0x00ee00ff)
 -- SERVER --
 
 function InputRegisterClass:sv_createData()
-    return {
+    local data = {
         name = self.storage:load() or "",
         power = 0,
     }
+
+    self.network:sendToClients("cl_setName", data.name)
+    return data
 end
 
 function InputRegisterClass:server_onCreate()
@@ -21,9 +24,6 @@ function InputRegisterClass:server_onCreate()
         power = 0,
         lastPower = 0,
     }
-
-    local name = sm.scrapcomputers.dataList["InputRegisters"][self.shape.id].name
-    self.network:sendToClients("cl_setName", name)
 
     sm.scrapcomputers.powerManager.updatePowerInstance(self.shape.id, 0.1)
 end

@@ -1,6 +1,7 @@
 local string_sub = string.sub
 local string_byte = string.byte
 local table_concat = table.concat
+local sm_scrapcomputers_utf8_getCharacterAt = sm.scrapcomputers.utf8.getCharacterAt
 
 sm.scrapcomputers.keywordCompression = {}
 
@@ -78,7 +79,7 @@ function sm.scrapcomputers.keywordCompression.compress(text)
             end
         end
 
-        local character = sm.scrapcomputers.utf8.getCharacterAt(text, i)
+        local character = sm_scrapcomputers_utf8_getCharacterAt(text, i)
         if isDelimitor then
             if #currentToken > 0 then
                 local keywordIndex = keywordCache[currentToken]

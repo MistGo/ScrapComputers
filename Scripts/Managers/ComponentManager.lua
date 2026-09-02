@@ -80,20 +80,29 @@ function sm.scrapcomputers.componentManager.toComponent(classData, componentType
 
     local serverOnCreateOriginal = classData.server_onCreate
     classData.server_onCreate = function(self)
+        local dataListInstance = {}
+
+        if isAComponent then
+            sm.scrapcomputers.dataList[componentType][self.shape.id] = dataListInstance
+        end
+
+        if serverOnCreateOriginal then serverOnCreateOriginal(self) end
+        
         self._sc_dnm_allowExecution = true
 
-        -- Keep this line here
         if not self.shape then isAComponent = false end
 
         if isAComponent then
-            sm.scrapcomputers.dataList[componentType][self.shape.id] = classData.sv_createData(self)
+            local createdData = classData.sv_createData(self)
+
+            for key, value in pairs(createdData) do
+                dataListInstance[key] = value
+            end
         end
 
         if isPowered then
             sm.scrapcomputers.powerManager.createPowerInstance(self.shape.id)
         end
-    
-        if serverOnCreateOriginal then serverOnCreateOriginal(self) end
     end
 
     if not classData.client_onCreate then

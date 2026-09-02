@@ -1,3 +1,5 @@
+-- TODO: UPDATE THIS SHIT TO 1.0.5 FIX!!!
+
 ---@diagnostic disable
 ---The <strong>sm</strong> namespace contain all API features related to Scrap Mechanic.
 ---

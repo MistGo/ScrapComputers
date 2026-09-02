@@ -195,7 +195,7 @@
     "scrapcomputers.battery.charge_delta.true"                              : "Charge Delta: #(SUCCESS)%s / %s kW",
     "scrapcomputers.battery.charge_delta.false"                             : "Charge Delta: #(ERROR)%s / %s kW",
     
-    //BREAKER
+    // BREAKER
     "scrapcomputers.breaker.power_transfer.true"                            : "Transferring: #(SUCCESS)%s kW",
     "scrapcomputers.breaker.power_transfer.false"                           : "Transferring: #(ERROR)%s kW",
 
@@ -214,7 +214,7 @@
     "scrapcomputers.other.disabled"                                         : "DISABLED",
     "scrapcomputers.other.generic_use"                                      : "#{Use} Use",
     
-        // Configs
+    // Configs
     // These are optional. They already have all the information in their configs, but if you want to modify them, you can change it here.
     // 
     // How to create translations for configs:
@@ -280,6 +280,8 @@
     "config.scrapcomputers.global.power=option=1"                           : "Disabled",
     "config.scrapcomputers.global.power=option=2"                           : "Enabled",
 
+    // Why the fuck are we suddenly using camelCase????
+
     "config.scrapcomputers.global.survivalBehavior=name"                    : "Survival Behaviors",
     "config.scrapcomputers.global.survivalBehavior=description"             : "This setting toggles survival behavior for survival-affected components. Some components act slightly differently in survival; for example, a GPS's world position has 5 meters of noise in survival. When enabled, this config setting allows the GPS to exhibit that 5-meter noise quirk in creative mode instead of being perfect.",
     "config.scrapcomputers.global.survivalBehavior=option=1"                : "Disabled",
@@ -288,5 +290,10 @@
     "config.scrapcomputers.global.networkTableReferences=name"               : "Network Table References",
     "config.scrapcomputers.global.networkTableReferences=description"        : "When this config setting is enabled, network packets that are tables will send the raw LUA table, resulting in the receiving network port getting the LUA table reference instead of its clone. This means that if a table reference is sent, any modifications to the table on either side of the network will sync without additional networking. Note, however, that tables sent before this option was enabled will still be clones and will not sync, and vice versa.",
     "config.scrapcomputers.global.networkTableReferences=option=1"           : "Disabled",
-    "config.scrapcomputers.global.networkTableReferences=option=2"           : "Enabled"
+    "config.scrapcomputers.global.networkTableReferences=option=2"           : "Enabled",
+
+    "config.scrapcomputers.global.automaticLanguageReloading=name"           : "Automatic Language Reloading",
+    "config.scrapcomputers.global.automaticLanguageReloading=description"    : "When enabled, ScrapComputers will automaticly reload all language files every second. However this can spam the console & logs every time! Only enable this if you need 'hot-reloading' for when ur creating a language",
+    "config.scrapcomputers.global.automaticLanguageReloading=option=1"       : "Disabled",
+    "config.scrapcomputers.global.automaticLanguageReloading=option=2"       : "Enabled"
 }

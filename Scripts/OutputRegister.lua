@@ -11,22 +11,22 @@ OutputRegisterClass.colorHighlight = sm.color.new(0xee0000ff)
 
 -- Computer API* Data
 function OutputRegisterClass:sv_createData()
-    return {
+    local data = {
         name = self.storage:load() or "",
         power = 0,
 
         -- The only time SC_PRIVATE was used.
         SC_PRIVATE_interactable = self.interactable
-}
+    }
+
+    self.network:sendToClients("cl_setName", data.name)
+    return data
 end
 
 function OutputRegisterClass:server_onCreate()
     self.sv = {
         power = 0
     }
-
-    local name = sm.scrapcomputers.dataList["OutputRegisters"][self.shape.id].name
-    self.network:sendToClients("cl_setName", name)
 
     sm.scrapcomputers.powerManager.updatePowerInstance(self.shape.id, 0.1)
 end

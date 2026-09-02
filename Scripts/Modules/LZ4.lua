@@ -1,3 +1,17 @@
+local bit_bor    = bit.bor
+local bit_band   = bit.band
+local bit_rshift = bit.rshift
+local bit_lshift = bit.lshift
+
+local string_byte = string.byte
+local string_char = string.char
+local string_sub  = string.sub
+
+local table_insert = table.insert
+local table_concat = table.concat
+
+local string_char_255 = string_char(255)
+
 -- LZ4 encoding library
 sm.scrapcomputers.lz4 = {}
 
@@ -10,14 +24,14 @@ function sm.scrapcomputers.lz4.decode(input)
     local output = {}
 
     local function readByte()
-        local byte = input:byte(inputPos)
+        local byte = string_byte(input, inputPos)
         inputPos = inputPos + 1
 
         return byte
     end
 
     local function readBytes(count)
-        local bytes = input:sub(inputPos, inputPos + count - 1)
+        local bytes = string_sub(input, inputPos, inputPos + count - 1)
         inputPos = inputPos + count
 
         return bytes
@@ -27,13 +41,13 @@ function sm.scrapcomputers.lz4.decode(input)
         local b1 = readByte()
         local b2 = readByte()
 
-        return b1 + bit.lshift(b2, 8)
+        return b1 + bit_lshift(b2, 8)
     end
 
     while inputPos <= inputLength do
         local token = readByte()
-        local literalLength = bit.rshift(token, 4)
-        local matchLength = bit.band(token, 0x0F) + 4
+        local literalLength = bit_rshift(token, 4)
+        local matchLength = bit_band(token, 0x0F) + 4
 
         if literalLength == 15 then
             local len
@@ -48,7 +62,7 @@ function sm.scrapcomputers.lz4.decode(input)
             local literals = readBytes(literalLength)
 
             for i = 1, #literals do
-                table.insert(output, literals:sub(i, i))
+                table_insert(output, string_sub(literals, i, i))
             end
         end
 
@@ -72,11 +86,11 @@ function sm.scrapcomputers.lz4.decode(input)
         for i = 1, matchLength do
             local matchPos = outputLength - offset + i
 
-            table.insert(output, output[matchPos])
+            table_insert(output, output[matchPos])
         end
     end
 
-    return table.concat(output)
+    return table_concat(output)
 end
 
 ---Encodes a string to LZ4
@@ -84,7 +98,11 @@ end
 ---@return string data The encoded string
 function sm.scrapcomputers.lz4.encode(input)
     local inputLength = #input
-    local inputBytes = {input:byte(1, -1)}
+    local inputBytes = {}
+    for i = 1, #input do
+        inputBytes[i] = string_byte(input, i)
+    end
+
     local i = 1
     local output = {}
     local literalStart = 1
@@ -114,38 +132,38 @@ function sm.scrapcomputers.lz4.encode(input)
             local literalLength = i - literalStart
             local tokenLiteral = (literalLength < 15) and literalLength or 15
             local tokenMatch = ((bestLength - 4) < 15) and (bestLength - 4) or 15
-            output[outputLen] = string.char(bit.bor(bit.lshift(tokenLiteral, 4), tokenMatch))
+            output[outputLen] = string_char(bit_bor(bit_lshift(tokenLiteral, 4), tokenMatch))
             outputLen = outputLen + 1
 
             if literalLength >= 15 then
                 local len = literalLength - 15
                 while len >= 255 do
-                    output[outputLen] = string.char(255)
+                    output[outputLen] = string_char_255
                     outputLen = outputLen + 1
                     len = len - 255
                 end
-                output[outputLen] = string.char(len)
+                output[outputLen] = string_char(len)
                 outputLen = outputLen + 1
             end
 
             if literalLength > 0 then
-                output[outputLen] = input:sub(literalStart, i - 1)
+                output[outputLen] = string_sub(input, literalStart, i - 1)
                 outputLen = outputLen + 1
             end
 
-            output[outputLen] = string.char(bit.band(bestOffset, 0xFF))
+            output[outputLen] = string_char(bit_band(bestOffset, 0xFF))
             outputLen = outputLen + 1
-            output[outputLen] = string.char(bit.rshift(bestOffset, 8))
+            output[outputLen] = string_char(bit_rshift(bestOffset, 8))
             outputLen = outputLen + 1
 
             if bestLength - 4 >= 15 then
                 local len = bestLength - 4 - 15
                 while len >= 255 do
-                    output[outputLen] = string.char(255)
+                    output[outputLen] = string_char(255)
                     outputLen = outputLen + 1
                     len = len - 255
                 end
-                output[outputLen] = string.char(len)
+                output[outputLen] = string_char(len)
                 outputLen = outputLen + 1
             end
 
@@ -159,19 +177,19 @@ function sm.scrapcomputers.lz4.encode(input)
     if literalStart <= inputLength then
         local literalLength = inputLength - literalStart + 1
         local tokenLiteral = (literalLength < 15) and literalLength or 15
-        output[#output + 1] = string.char(bit.lshift(tokenLiteral, 4))
+        output[#output + 1] = string_char(bit_lshift(tokenLiteral, 4))
 
         if literalLength >= 15 then
             local len = literalLength - 15
             while len >= 255 do
-                output[#output + 1] = string.char(255)
+                output[#output + 1] = string_char_255
                 len = len - 255
             end
-            output[#output + 1] = string.char(len)
+            output[#output + 1] = string_char(len)
         end
 
-        output[#output + 1] = input:sub(literalStart, inputLength)
+        output[#output + 1] = string_sub(input, literalStart, inputLength)
     end
 
-    return table.concat(output)
+    return table_concat(output)
 end
