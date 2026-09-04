@@ -52,21 +52,21 @@ function sm.scrapcomputers.environmentManager.createEnv(self, luaVM)
         ---@param message string
         ---@param duration number?
         ---@param player Player?
-        alert = function(message, duration, player)
-            duration = duration or 5
-
+        alert = function(message, duration, isNotification, player)
+            duration = duration or 4
+            
             sm.scrapcomputers.errorHandler.assertArgument(message, 1, {"string"})
             sm.scrapcomputers.errorHandler.assertArgument(duration, 2, {"number", "nil"})
-            sm.scrapcomputers.errorHandler.assertArgument(player, 3, {"Player", "nil"})
+            sm.scrapcomputers.errorHandler.assertArgument(isNotification, 2, {"boolean", "nil"})
+            sm.scrapcomputers.errorHandler.assertArgument(player, 4, {"Player", "nil"})
+            if not isUnsafeENV and player then error("Cannot use Player argument in safe-env!") end
 
-            if not isUnsafeENV and player then
-                error("Cannot use Player argument in safe-env!")
-            end
+            local payload = { message, duration, (isNotification and 2 or 1) }
 
             if player then
-                self.network:sendToClient(player, "cl_alert", {message, duration})
+                self.network:sendToClient(player, "cl_alert", payload)
             else
-                self.network:sendToClients("cl_alert", {message, duration})
+                self.network:sendToClients("cl_alert", payload)
             end
         end,
 

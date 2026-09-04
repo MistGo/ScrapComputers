@@ -10,6 +10,8 @@ SeatControllerClass.connectionInput = sm.interactable.connectionType.power
 SeatControllerClass.connectionOutput = sm.interactable.connectionType.compositeIO
 SeatControllerClass.colorNormal = sm.color.new(0x696969ff)
 SeatControllerClass.colorHighlight = sm.color.new(0x969696ff)
+SeatControllerClass.connectIcon = "driverSeat"
+SeatControllerClass.connectIconScale = 0.75
 
 local localPlayer = sm.localPlayer
 local camera = sm.camera
@@ -29,6 +31,8 @@ function SeatControllerClass:sv_createData()
         ---Gets the seated characters camera data and returns it
         ---@return CameraData data The camera data
         getCameraData = function() return self.sv.seat and self.sv.camera or nil end,
+
+        getSteeringAngles = function () return self.sv.seat and self:sv_getSteeringAngles() or nil end,
 
         ---Presses a button
         ---@param index integer The button to press
@@ -74,6 +78,7 @@ function SeatControllerClass:server_onFixedUpdate()
         self.sv.data = {
             wsPower = singleParent:getSteeringPower(),
             adPower = singleParent:getSteeringAngle(),
+            sprint  = singleParent:getSteeringSprint(),
             characterName = name,
         }
     else
@@ -83,17 +88,29 @@ end
 
 function SeatControllerClass:sv_getJointData()
     local jointData = {}
+    local joints = self.sv.seat:getJoints()
 
-    for _, joint in pairs(self.sv.seat:getBearings()) do
-        local leftSpeed, rightSpeed, leftLimit, rightLimit, locked = self.sv.seat:getSteeringJointSettings(joint)
+    for _, joint in ipairs(joints) do
+        if joint:getBearingEnabled() then
+            local leftSpeed, rightSpeed, leftLimit, rightLimit, locked = self.sv.seat:getSteeringJointSettings(joint)
+            local jointType = joint:getType()
+            local isReversed = joint:isReversed()
 
-        table.insert(jointData, {
-            leftSpeed = leftSpeed,
-            rightSpeed = rightSpeed,
-            leftLimit = leftLimit,
-            rightLimit = rightLimit,
-            bearingLock = not locked,
-        })
+            -- NOTE: Springs have inverted rotation compared to regular bearings (same arrow direction = opposite spin). (Idk, is this even needed???)
+            if jointType == "spring" then
+                isReversed = not isReversed
+            end
+
+            table.insert(jointData, {
+                leftSpeed = leftSpeed,
+                rightSpeed = rightSpeed,
+                leftLimit = leftLimit,
+                rightLimit = rightLimit,
+                bearingLock = not locked,
+                isReversed = isReversed,
+                bearingType = jointType
+            })
+        end
     end
 
     return jointData
@@ -108,6 +125,31 @@ function SeatControllerClass:sv_setCameraInfo(data)
     }
 end
 
+function SeatControllerClass:sv_getSteeringAngles()
+    local angles = {}
+    local joints = self.sv.seat:getJoints()
+
+    for _, joint in ipairs(joints) do
+        if joint:getBearingEnabled() then
+            local angle = joint:getAngle()
+            local jointType = joint:getType()
+            local isReversed = joint:isReversed()
+
+            if jointType == "spring" then
+                isReversed = not isReversed
+            end
+
+            if isReversed then
+                angle = -angle
+            end
+            
+            table.insert(angles, angle)
+        end
+    end
+
+    return angles
+end
+
 function SeatControllerClass:client_onFixedUpdate()
     local player = localPlayer.getPlayer()
     local character = player.character
@@ -119,7 +161,7 @@ function SeatControllerClass:client_onFixedUpdate()
             local seatedCharacter = singleParent:getSeatCharacter()
 
             if seatedCharacter and seatedCharacter == character then
-                self.network:sendToServer("sv_setCameraInfo", {camera.getPosition() + seatedCharacter.velocity * 0.025, camera.getRotation(), localPlayer.getDirection(), camera.getFov()})
+                self.network:sendToServer("sv_setCameraInfo", { camera.getPosition() + seatedCharacter.velocity * 0.025, camera.getRotation(), localPlayer.getDirection(), camera.getFov() })
             end
         end
     end

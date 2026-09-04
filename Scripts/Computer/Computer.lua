@@ -2264,8 +2264,16 @@ function ComputerClass:cl_internalChatMessage(msg)
 end
 
 function ComputerClass:cl_alert(data)
-    if self.cl.storage.flags.allowAlerts then
-        sm.gui.displayAlertText(data[1], data[2])
+    if not self.cl.storage.flags.allowAlerts then return end
+
+    local msg = data[1]
+    local duration = data[2]
+    local alertType = data[3]
+
+    if alertType == 1 then
+        sm.gui.displayAlertText(msg, duration)
+    elseif alertType == 2 then
+        sm.event.sendToPlayer(sm.localPlayer.getPlayer(), "cl_n_onMessage", { message = msg, displayTime = duration })
     end
 end
 
