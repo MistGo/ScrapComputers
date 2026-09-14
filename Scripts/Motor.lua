@@ -205,7 +205,7 @@ function MotorClass:server_onFixedUpdate()
         totalPower = totalPower + (bearingPower * (#self.sv.bearings + #self.sv.springs))
     end
 
-    if self.sv.force ~= 0 then
+    if self.sv.force > 0 then
         local pistonPowerSpeed = (self.sv.pistonSpeed < 1) and 1 or self.sv.pistonSpeed
         local pistonPower = (pistonPowerSpeed * self.sv.force / PISTON_POWER_COEFF) * EFFICIENCY
 

@@ -32,13 +32,13 @@ function SeatControllerClass:sv_createData()
         ---@return CameraData data The camera data
         getCameraData = function() return self.sv.seat and self.sv.camera or nil end,
 
-        getSteeringAngles = function () return self.sv.seat and self:sv_getSteeringAngles() or nil end,
+        getSteeringAngles = function() return self.sv.seat and self:sv_getSteeringAngles() or nil end,
 
         ---Presses a button
         ---@param index integer The button to press
         ---@return boolean? success If it succeeded
-        pressButton = function (index)
-            sm.scrapcomputers.errorHandler.assertArgument(index, nil, {"integer"})
+        pressButton = function(index)
+            sm.scrapcomputers.errorHandler.assertArgument(index, nil, { "integer" })
             sm.scrapcomputers.errorHandler.assert(index >= 0, nil, "Index out of range.")
 
             return self.sv.seat and self.sv.seat:pressSeatInteractable(index) or nil
@@ -47,18 +47,23 @@ function SeatControllerClass:sv_createData()
         ---Releases a button
         ---@param index integer The button to release
         ---@return boolean? success If it succeeded
-        releaseButton = function (index)
-            sm.scrapcomputers.errorHandler.assertArgument(index, nil, {"integer"})
+        releaseButton = function(index)
+            sm.scrapcomputers.errorHandler.assertArgument(index, nil, { "integer" })
             sm.scrapcomputers.errorHandler.assert(index >= 0, nil, "Index out of range.")
 
             return self.sv.seat and self.sv.seat:releaseSeatInteractable(index) or nil
         end,
-}
+    }
 end
 
 function SeatControllerClass:server_onCreate()
     self.sv = {
-        data = {},
+        data = {
+            wsPower = 0,
+            adPower = 0,
+            sprint = false,
+            characterName = nil
+        },
         camera = {},
         seat = nil, ---@type Interactable
     }
@@ -75,12 +80,10 @@ function SeatControllerClass:server_onFixedUpdate()
         local seatedCharacter = singleParent:getSeatCharacter()
         local name = seatedCharacter and seatedCharacter:getPlayer().name or nil
 
-        self.sv.data = {
-            wsPower = singleParent:getSteeringPower(),
-            adPower = singleParent:getSteeringAngle(),
-            sprint  = singleParent:getSteeringSprint(),
-            characterName = name,
-        }
+        self.sv.data.wsPower = singleParent:getSteeringPower()
+        self.sv.data.adPower = singleParent:getSteeringAngle()
+        self.sv.data.sprint = singleParent:getSteeringSprint()
+        self.sv.data.characterName = name
     else
         self.sv.seat = nil
     end
@@ -90,7 +93,7 @@ function SeatControllerClass:sv_getJointData()
     local jointData = {}
     local joints = self.sv.seat:getJoints()
 
-    for _, joint in ipairs(joints) do
+    for i, joint in ipairs(joints) do
         if joint:getBearingEnabled() then
             local leftSpeed, rightSpeed, leftLimit, rightLimit, locked = self.sv.seat:getSteeringJointSettings(joint)
             local jointType = joint:getType()
@@ -101,7 +104,7 @@ function SeatControllerClass:sv_getJointData()
                 isReversed = not isReversed
             end
 
-            table.insert(jointData, {
+            jointData[i] = {
                 leftSpeed = leftSpeed,
                 rightSpeed = rightSpeed,
                 leftLimit = leftLimit,
@@ -109,7 +112,7 @@ function SeatControllerClass:sv_getJointData()
                 bearingLock = not locked,
                 isReversed = isReversed,
                 bearingType = jointType
-            })
+            }
         end
     end
 
@@ -129,21 +132,15 @@ function SeatControllerClass:sv_getSteeringAngles()
     local angles = {}
     local joints = self.sv.seat:getJoints()
 
-    for _, joint in ipairs(joints) do
+    for i, joint in ipairs(joints) do
         if joint:getBearingEnabled() then
             local angle = joint:getAngle()
-            local jointType = joint:getType()
-            local isReversed = joint:isReversed()
 
-            if jointType == "spring" then
-                isReversed = not isReversed
-            end
-
-            if isReversed then
+            if joint.type == "spring" then
                 angle = -angle
             end
-            
-            table.insert(angles, angle)
+
+            angles[i] = angle
         end
     end
 
@@ -151,6 +148,8 @@ function SeatControllerClass:sv_getSteeringAngles()
 end
 
 function SeatControllerClass:client_onFixedUpdate()
+    self.cl = self.cl or {}
+
     local player = localPlayer.getPlayer()
     local character = player.character
 
@@ -161,7 +160,17 @@ function SeatControllerClass:client_onFixedUpdate()
             local seatedCharacter = singleParent:getSeatCharacter()
 
             if seatedCharacter and seatedCharacter == character then
-                self.network:sendToServer("sv_setCameraInfo", { camera.getPosition() + seatedCharacter.velocity * 0.025, camera.getRotation(), localPlayer.getDirection(), camera.getFov() })
+                local camPos = camera.getPosition() + seatedCharacter.velocity * 0.025
+                local camRot = camera.getRotation()
+                local camDir = localPlayer.getDirection()
+                local camFov = camera.getFov()
+
+                if not self.cl.lastCamPos or self.cl.lastCamPos ~= camPos or self.cl.lastCamRot ~= camRot then
+                    self.cl.lastCamPos = camPos
+                    self.cl.lastCamRot = camRot
+
+                    self.network:sendToServer("sv_setCameraInfo", { camPos, camRot, camDir, camFov })
+                end
             end
         end
     end
